@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NWC Flowmeter Installation Survey</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  margin: 0;
+  padding: 10px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+.header img {
+  height: 55px;
+}
+.section {
+  background: #ffffff;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  page-break-inside: avoid;
+}
+label {
+  font-weight: bold;
+  font-size: 14px;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+button {
+  width: 100%;
+  padding: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  margin-top: 10px;
+}
+.preview {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 6px;
+}
+@media print {
+  button { display: none; }
+  body { background: white; padding: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h2 style="margin:0;">Flowmeter Installation Survey</h2>
+    <div style="font-size:13px;color:#555;">National Water Company (NWC)</div>
+  </div>
+  nwc-logo.png
+</div>
+
+<!-- PROJECT & LOCATION -->
+<div class="section">
+<h3>Project & Location Information</h3>
+
+<input placeholder="Project Number & Name">
+
+<label>Contractor Name</label>
+<select>
+  <option>Pillar Arabian For Trading And Construction</option>
+</select>
+
+<label>Cluster Name</label>
+<select>
+  <option value="">Select Cluster</option>
+  <option>North Cluster</option>
+  <option>North West Cluster</option>
+  <option>Central Cluster</option>
+  <option>West Cluster</option>
+  <option>South Cluster</option>
+</select>
+
+<input placeholder="Business Unit">
+<input placeholder="City">
+<textarea placeholder="Address"></textarea>
+<input placeholder="Site Name">
+
+<button onclick="captureGPS()">Capture GPS</button>
+<input id="lat" placeholder="Latitude" readonly>
+<input id="lng" placeholder="Longitude" readonly>
+</div>
+
+<!-- PIPE INFORMATION -->
+<div class="section">
+<h3>Pipe Information</h3>
+
+<label>Pipe Diameter (DN)</label>
+<select id="pipeDN" onchange="toggleCustomDN()">
+  <option value="">Select DN</option>
+  <option value="DN 50">DN 50</option>
+  <option value="DN 100">DN 100</option>
+  <option value="DN 150">DN 150</option>
+  <option value="DN 200">DN 200</option>
+  <option value="DN 250">DN 250</option>
+  <option value="DN 300">DN 300</option>
+  <option value="DN 350">DN 350</option>
+  <option value="DN 400">DN 400</option>
+  <option value="DN 500">DN 500</option>
+  <option value="DN 600">DN 600</option>
+  <option value="DN 800">DN 800</option>
+  <option value="DN 1000">DN 1000</option>
+  <option value="DN 1100">DN 1100</option>
+  <option value="DN 1200">DN 1200</option>
+  <option value="DN 2000">DN 2000</option>
+  <option value="CUSTOM">Custom DN</option>
+</select>
+
+<input
+  id="customDN"
+  type="number"
+  placeholder="Enter Custom DN"
+  style="display:none;"
+>
+
+<input placeholder="Pipe Material">
+
+<button onclick="takePhoto('pipePhoto')">Capture Pipe Photo</button>
+<img id="pipePhoto" class="preview">
+</div>
+
+<!-- FLOWMETER -->
+<div class="section">
+<h3>Flowmeter Information</h3>
+
+<input placeholder="Brand & Model">
+<input placeholder="Serial Number">
+<input placeholder="Reading">
+
+<button onclick="takePhoto('flowPhoto')">Capture Flowmeter Photo</button>
+<img id="flowPhoto" class="preview">
+</div>
+
+<!-- REMARKS -->
+<div class="section">
+<h3>Remarks</h3>
+<textarea placeholder="Remarks"></textarea>
+</div>
+
+<button onclick="generatePDF()">Generate PDF</button>
+
+<script>
+let LAT = "", LNG = "";
+
+function captureGPS() {
+  navigator.geolocation.getCurrentPosition(pos => {
+    LAT = pos.coords.latitude.toFixed(6);
+    LNG = pos.coords.longitude.toFixed(6);
+    lat.value = LAT;
+    lng.value = LNG;
+  });
+}
+
+function toggleCustomDN() {
+  const dnSelect = document.getElementById("pipeDN");
+  const customInput = document.getElementById("customDN");
+
+  if (dnSelect.value === "CUSTOM") {
+    customInput.style.display = "block";
+    customInput.focus();
+  } else {
+    customInput.style.display = "none";
+    customInput.value = "";
+  }
+}
+
+function takePhoto(target) {
+  if (!LAT) {
+    alert("Please capture GPS first");
+    return;
+  }
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.capture = "environment";
+
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => stampImage(reader.result, target);
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function stampImage(src, target) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "20px Arial";
+    ctx.fillText(`Lat: ${LAT}, Lng: ${LNG}`, 10, canvas.height - 40);
+    ctx.fillText(new Date().toLocaleString(), 10, canvas.height - 15);
+
+    document.getElementById(target).src = canvas.toDataURL("image/jpeg");
+  };
+  img.src = src;
+}
+
+function generatePDF() {
+  window.print();
+}
+</script>
+
+</body>
+</html>
