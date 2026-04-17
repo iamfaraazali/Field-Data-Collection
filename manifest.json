@@ -1,0 +1,21 @@
+{
+  "name": "NWC Field Survey App",
+  "short_name": "NWC Survey",
+  "start_url": "nwc-field-report.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "nwc-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "nwc-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
